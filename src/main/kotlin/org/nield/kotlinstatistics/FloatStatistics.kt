@@ -1,6 +1,7 @@
+package org.nield.kotlinstatistics
+
 import org.apache.commons.math3.stat.StatUtils
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics
-import org.nield.kotlinstatistics.*
 import org.nield.kotlinstatistics.range.Range
 import org.nield.kotlinstatistics.range.until
 import java.math.BigDecimal
