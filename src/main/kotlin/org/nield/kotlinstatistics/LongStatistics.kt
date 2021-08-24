@@ -176,7 +176,7 @@ fun <K, V> Map<K, List<V>>.sumByLong(selector: (V) -> Long): Map<K, Long> =
 fun <K, V> Map<K, List<V>>.averageByLong(selector: (V) -> Long): Map<K, Double> =
         entries.map { it.key to it.value.map(selector).average() }.toMap()
 
-fun <K, V> Map<K, List<V>>.LongRangeBy(selector: (V) -> Long): Map<K, Iterable<Long>> =
+fun <K, V> Map<K, List<V>>.longRangeBy(selector: (V) -> Long): Map<K, Iterable<Long>> =
         entries.map { it.key to it.value.map(selector).longRange() }.toMap()
 
 fun <K, V> Map<K, List<V>>.geometricMeanByLong(selector: (V) -> Long): Map<K, Double> =
