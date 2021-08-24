@@ -12,7 +12,7 @@ inline fun <T,K,R> Sequence<T>.groupApply(crossinline keySelector: (T) -> K, cro
     val aggregatedMap = mutableMapOf<K,R>()
 
     for ((key, value) in map) {
-        aggregatedMap.put(key, aggregation(value))
+        aggregatedMap[key] = aggregation(value)
     }
     return aggregatedMap
 }
@@ -28,7 +28,7 @@ inline fun <T,V,K,R> Sequence<T>.groupApply(crossinline keySelector: (T) -> K, c
     val aggregatedMap = mutableMapOf<K, R>()
 
     for (entry in map.entries) {
-        aggregatedMap.put(entry.key, aggregation(entry.value))
+        aggregatedMap[entry.key] = aggregation(entry.value)
     }
     return aggregatedMap
 }

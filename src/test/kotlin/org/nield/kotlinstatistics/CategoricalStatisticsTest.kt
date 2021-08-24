@@ -1,7 +1,7 @@
 package org.nield.kotlinstatistics
 
-import org.junit.Assert.assertTrue
 import org.junit.Test
+import kotlin.test.assertEquals
 
 class CategoricalStatisticsTest {
 
@@ -9,25 +9,28 @@ class CategoricalStatisticsTest {
 
     @Test
     fun testMode1() {
-        assertTrue(listOf(2,54,67,3,4,5,2,2).mode().toSet() == setOf(2))
+        assertEquals(setOf(2),
+            listOf(2,54,67,3,4,5,2,2).mode().toSet())
     }
     @Test
     fun testMode2() {
-        assertTrue(listOf(2,4,54,4,67,3,4,5,2,2).mode().toSet() == setOf(2,4))
+        assertEquals(setOf(2,4),
+            listOf(2,4,54,4,67,3,4,5,2,2).mode().toSet())
     }
     @Test
     fun testGroupApply() {
-        strings.groupApply( {it.length}, { it.asSequence().flatMap { it.split("").asSequence() }.filter { it.isNotEmpty() }.count() })
-                .let { assertTrue(it == mapOf(5 to 15, 4 to 4, 7 to 7)) }
+        assertEquals(mapOf(5 to 15, 4 to 4, 7 to 7),
+            strings.groupApply( {it.length}, { it.asSequence().flatMap { it.split("").asSequence() }.filter { it.isNotEmpty() }.count() })
+        )
     }
 
     @Test
     fun countBy() {
 
-        strings.map { it.length }.countBy()
-                .let { it == mapOf(5 to 3, 4 to 1, 7 to 1)}
+        assertEquals(mapOf(5 to 3, 4 to 1, 7 to 1),
+            strings.map { it.length }.countBy())
 
-        strings.countBy { it.length }
-                .let { it == mapOf(5 to 3, 4 to 1, 7 to 1)}
+        assertEquals(mapOf(5 to 3, 4 to 1, 7 to 1),
+            strings.countBy { it.length })
     }
 }

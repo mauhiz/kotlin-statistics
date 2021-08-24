@@ -49,7 +49,7 @@ inline fun <T> Collection<T>.multiKMeansCluster(k: Int, maxIterations: Int, tria
                 .let { list ->
                     KMeansPlusPlusClusterer<ClusterInput<T>>(k, maxIterations)
                             .let {
-                                MultiKMeansPlusPlusClusterer<ClusterInput<T>>(it, trialCount)
+                                MultiKMeansPlusPlusClusterer(it, trialCount)
                                         .cluster(list)
                                         .map {
                                             Centroid(DoublePoint(-1.0,-1.0), it.points.map { it.item })

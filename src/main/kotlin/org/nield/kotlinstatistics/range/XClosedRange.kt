@@ -7,7 +7,7 @@ package org.nield.kotlinstatistics.range
  *
  * binning and histograms.
  */
-class XClosedRange<T: Comparable<T>>(val startInclusive: T, override val endInclusive: T): Range<T>, kotlin.ranges.ClosedRange<T> by startInclusive..endInclusive {
+class XClosedRange<T: Comparable<T>>(val startInclusive: T, override val endInclusive: T): Range<T>, ClosedRange<T> by startInclusive..endInclusive {
 
     init {
         if (startInclusive > endInclusive) throw InvalidRangeException("[$startInclusive..$endInclusive] is an invalid XClosedRange!")

@@ -12,7 +12,7 @@ class OpenDoubleRange(
     fun lessThanOrEquals(a: Double, b: Double): Boolean = a <= b
 
     operator fun contains(value: Double): Boolean = value >= _start && value < _endExclusive
-    fun isEmpty(): Boolean = !(_start <= _endExclusive)
+    fun isEmpty(): Boolean = _start > _endExclusive
 
     override fun equals(other: Any?): Boolean {
         return other is OpenDoubleRange && (isEmpty() && other.isEmpty() ||

@@ -5,7 +5,6 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics
 import org.nield.kotlinstatistics.range.Range
 import org.nield.kotlinstatistics.range.until
 import java.math.BigDecimal
-import java.util.concurrent.atomic.AtomicBoolean
 
 val FloatArray.descriptiveStatistics get(): Descriptives = DescriptiveStatistics().apply { forEach { addValue(it.toDouble()) } }.let(::ApacheDescriptives)
 
@@ -57,7 +56,7 @@ fun <K> Iterable<Pair<K,Float>>.averageBy() = asSequence().averageBy()
 
 
 fun Sequence<Float>.floatRange() = toList().floatRange()
-fun Iterable<Float>.floatRange() = toList().let { (it.min()?:throw Exception("At least one element must be present"))..(it.max()?:throw Exception("At least one element must be present")) }
+fun Iterable<Float>.floatRange() = toList().let { (it.minOrNull()?:throw Exception("At least one element must be present"))..(it.maxOrNull()?:throw Exception("At least one element must be present")) }
 
 inline fun <T,K> Sequence<T>.floatRangeBy(crossinline keySelector: (T) -> K, crossinline floatSelector: (T) -> Float) =
         groupApply(keySelector, floatSelector) { it.range() }
@@ -105,13 +104,12 @@ inline fun <T, G> List<T>.binByFloat(binSize: Float,
 ): BinModel<G, Float> {
 
     val groupedByC = asSequence().groupBy { BigDecimal.valueOf(valueSelector(it).toDouble()) }
-    val minC = rangeStart?.toDouble()?.let(BigDecimal::valueOf) ?:groupedByC.keys.min()!!
-    val maxC = groupedByC.keys.max()!!
+    val minC = rangeStart?.toDouble()?.let(BigDecimal::valueOf) ?: groupedByC.keys.minOrNull()!!
+    val maxC = groupedByC.keys.maxOrNull()!!
 
     val bins = mutableListOf<Range<Float>>().apply {
         var currentRangeStart = minC
         var currentRangeEnd = minC
-        val isFirst = AtomicBoolean(true)
         val binSizeBigDecimal = BigDecimal.valueOf(binSize.toDouble())
         while  (currentRangeEnd < maxC) {
             currentRangeEnd = currentRangeStart + binSizeBigDecimal
@@ -163,43 +161,43 @@ fun <T, C : Comparable<C>> BinModel<List<T>, C>.descriptiveStatisticsByFloat(sel
         BinModel(bins.map { Bin(it.range, it.value.map(selector).descriptiveStatistics) })
 
 
-fun <K> Map<K, List<Float>>.sum(): Map<K, Float> = entries.map { it.key to it.value.sum() }.toMap()
-fun <K> Map<K, List<Float>>.average(): Map<K, Double> = entries.map { it.key to it.value.average() }.toMap()
-fun <K> Map<K, List<Float>>.floatRange(): Map<K, ClosedFloatingPointRange<Float>> = entries.map { it.key to it.value.floatRange() }.toMap()
-fun <K> Map<K, List<Float>>.geometricMean(): Map<K, Double> = entries.map { it.key to it.value.geometricMean() }.toMap()
-fun <K> Map<K, List<Float>>.median(): Map<K, Double> = entries.map { it.key to it.value.median() }.toMap()
-fun <K> Map<K, List<Float>>.percentile(percentile: Double): Map<K, Double> = entries.map { it.key to it.value.percentile(percentile) }.toMap()
-fun <K> Map<K, List<Float>>.variance(): Map<K, Double> = entries.map { it.key to it.value.variance() }.toMap()
-fun <K> Map<K, List<Float>>.sumOfSquares(): Map<K, Double> = entries.map { it.key to it.value.sumOfSquares() }.toMap()
-fun <K> Map<K, List<Float>>.normalize(): Map<K, DoubleArray> = entries.map { it.key to it.value.normalize() }.toMap()
-fun <K> Map<K, List<Float>>.descriptiveStatistics(): Map<K, Descriptives> = entries.map { it.key to it.value.descriptiveStatistics }.toMap()
+fun <K> Map<K, List<Float>>.sum(): Map<K, Float> = mapValues { it.value.sum() }
+fun <K> Map<K, List<Float>>.average(): Map<K, Double> = mapValues { it.value.average() }
+fun <K> Map<K, List<Float>>.floatRange(): Map<K, ClosedFloatingPointRange<Float>> = mapValues { it.value.floatRange() }
+fun <K> Map<K, List<Float>>.geometricMean(): Map<K, Double> = mapValues { it.value.geometricMean() }
+fun <K> Map<K, List<Float>>.median(): Map<K, Double> = mapValues { it.value.median() }
+fun <K> Map<K, List<Float>>.percentile(percentile: Double): Map<K, Double> = mapValues { it.value.percentile(percentile) }
+fun <K> Map<K, List<Float>>.variance(): Map<K, Double> = mapValues { it.value.variance() }
+fun <K> Map<K, List<Float>>.sumOfSquares(): Map<K, Double> = mapValues { it.value.sumOfSquares() }
+fun <K> Map<K, List<Float>>.normalize(): Map<K, DoubleArray> = mapValues { it.value.normalize() }
+fun <K> Map<K, List<Float>>.descriptiveStatistics(): Map<K, Descriptives> = mapValues { it.value.descriptiveStatistics }
 
 fun <K, V> Map<K, List<V>>.sumByFloat(selector: (V) -> Float): Map<K, Float> =
-        entries.map { it.key to it.value.map(selector).sum() }.toMap()
+        mapValues { it.value.map(selector).sum()}
 
 fun <K, V> Map<K, List<V>>.averageByFloat(selector: (V) -> Float): Map<K, Double> =
-        entries.map { it.key to it.value.map(selector).average() }.toMap()
+        mapValues { it.value.map(selector).average() }
 
 fun <K, V> Map<K, List<V>>.floatRangeBy(selector: (V) -> Float): Map<K, ClosedFloatingPointRange<Float>> =
-        entries.map { it.key to it.value.map(selector).floatRange() }.toMap()
+        mapValues { it.value.map(selector).floatRange() }
 
 fun <K, V> Map<K, List<V>>.geometricMeanByFloat(selector: (V) -> Float): Map<K, Double> =
-        entries.map { it.key to it.value.map(selector).geometricMean() }.toMap()
+        mapValues { it.value.map(selector).geometricMean() }
 
 fun <K, V> Map<K, List<V>>.medianByFloat(selector: (V) -> Float): Map<K, Double> =
-        entries.map { it.key to it.value.map(selector).median() }.toMap()
+        mapValues { it.value.map(selector).median() }
 
 fun <K, V> Map<K, List<V>>.percentileByFloat(selector: (V) -> Float, percentile: Double): Map<K, Double> =
-        entries.map { it.key to it.value.map(selector).percentile(percentile) }.toMap()
+        mapValues { it.value.map(selector).percentile(percentile) }
 
 fun <K, V> Map<K, List<V>>.varianceByFloat(selector: (V) -> Float): Map<K, Double> =
-        entries.map { it.key to it.value.map(selector).variance() }.toMap()
+        mapValues { it.value.map(selector).variance() }
 
 fun <K, V> Map<K, List<V>>.sumOfSquaresByFloat(selector: (V) -> Float): Map<K, Double> =
-        entries.map { it.key to it.value.map(selector).sumOfSquares() }.toMap()
+        mapValues { it.value.map(selector).sumOfSquares() }
 
 fun <K, V> Map<K, List<V>>.normalizeByFloat(selector: (V) -> Float): Map<K, DoubleArray> =
-        entries.map { it.key to it.value.map(selector).normalize() }.toMap()
+        mapValues { it.value.map(selector).normalize() }
 
 fun <K, V> Map<K, List<V>>.descriptiveStatisticsByFloat(selector: (V) -> Float): Map<K, Descriptives> =
-        entries.map { it.key to it.value.map(selector).descriptiveStatistics }.toMap()
+        mapValues { it.value.map(selector).descriptiveStatistics }

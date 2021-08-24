@@ -49,7 +49,7 @@ fun <K> Iterable<Pair<K,Int>>.averageBy() = asSequence().averageBy()
 
 
 fun Sequence<Int>.intRange() = toList().intRange()
-fun Iterable<Int>.intRange() = toList().let { (it.min()?:throw Exception("At least one element must be present"))..(it.max()?:throw Exception("At least one element must be present")) }
+fun Iterable<Int>.intRange() = toList().let { (it.minOrNull()?:throw Exception("At least one element must be present"))..(it.maxOrNull()?:throw Exception("At least one element must be present")) }
 
 inline fun <T,K> Sequence<T>.intRangeBy(crossinline keySelector: (T) -> K, crossinline intSelector: (T) -> Int) =
         groupApply(keySelector, intSelector) { it.range() }
@@ -98,8 +98,8 @@ inline fun <T, G> List<T>.binByInt(binSize: Int,
 ): BinModel<G, Int> {
 
     val groupedByC = asSequence().groupBy(valueSelector)
-    val minC = rangeStart?:groupedByC.keys.min()!!
-    val maxC = groupedByC.keys.max()!!
+    val minC = rangeStart?:groupedByC.keys.minOrNull()!!
+    val maxC = groupedByC.keys.maxOrNull()!!
 
     val bins = mutableListOf<Range<Int>>().apply {
         var currentRangeStart = minC
@@ -124,7 +124,7 @@ inline fun <T, G> List<T>.binByInt(binSize: Int,
 }
 
 fun <T, C : Comparable<C>> BinModel<List<T>, C>.sumByInt(selector: (T) -> Int): BinModel<Int, C> =
-        BinModel(bins.map { Bin(it.range, it.value.map(selector).sum()) })
+        BinModel(bins.map { Bin(it.range, it.value.sumOf(selector)) })
 
 fun <T, C : Comparable<C>> BinModel<List<T>, C>.averageByInt(selector: (T) -> Int): BinModel<Double, C> =
         BinModel(bins.map { Bin(it.range, it.value.map(selector).average()) })
@@ -154,43 +154,43 @@ fun <T, C : Comparable<C>> BinModel<List<T>, C>.descriptiveStatisticsByInt(selec
         BinModel(bins.map { Bin(it.range, it.value.map(selector).descriptiveStatistics) })
 
 
-fun <K> Map<K, List<Int>>.sum(): Map<K, Int> = entries.map { it.key to it.value.sum() }.toMap()
-fun <K> Map<K, List<Int>>.average(): Map<K, Double> = entries.map { it.key to it.value.average() }.toMap()
-fun <K> Map<K, List<Int>>.intRange(): Map<K, IntRange> = entries.map { it.key to it.value.intRange() }.toMap()
-fun <K> Map<K, List<Int>>.geometricMean(): Map<K, Double> = entries.map { it.key to it.value.geometricMean() }.toMap()
-fun <K> Map<K, List<Int>>.median(): Map<K, Double> = entries.map { it.key to it.value.median() }.toMap()
-fun <K> Map<K, List<Int>>.percentile(percentile: Double): Map<K, Double> = entries.map { it.key to it.value.percentile(percentile) }.toMap()
-fun <K> Map<K, List<Int>>.variance(): Map<K, Double> = entries.map { it.key to it.value.variance() }.toMap()
-fun <K> Map<K, List<Int>>.sumOfSquares(): Map<K, Double> = entries.map { it.key to it.value.sumOfSquares() }.toMap()
-fun <K> Map<K, List<Int>>.normalize(): Map<K, DoubleArray> = entries.map { it.key to it.value.normalize() }.toMap()
-fun <K> Map<K, List<Int>>.descriptiveStatistics(): Map<K, Descriptives> = entries.map { it.key to it.value.descriptiveStatistics }.toMap()
+fun <K> Map<K, List<Int>>.sum(): Map<K, Int> = mapValues { it.value.sum() }
+fun <K> Map<K, List<Int>>.average(): Map<K, Double> = mapValues { it.value.average() }
+fun <K> Map<K, List<Int>>.intRange(): Map<K, IntRange> = mapValues { it.value.intRange() }
+fun <K> Map<K, List<Int>>.geometricMean(): Map<K, Double> = mapValues { it.value.geometricMean() }
+fun <K> Map<K, List<Int>>.median(): Map<K, Double> = mapValues { it.value.median() }
+fun <K> Map<K, List<Int>>.percentile(percentile: Double): Map<K, Double> = mapValues { it.value.percentile(percentile) }
+fun <K> Map<K, List<Int>>.variance(): Map<K, Double> = mapValues { it.value.variance() }
+fun <K> Map<K, List<Int>>.sumOfSquares(): Map<K, Double> = mapValues { it.value.sumOfSquares() }
+fun <K> Map<K, List<Int>>.normalize(): Map<K, DoubleArray> = mapValues { it.value.normalize() }
+fun <K> Map<K, List<Int>>.descriptiveStatistics(): Map<K, Descriptives> = mapValues { it.value.descriptiveStatistics }
 
 fun <K, V> Map<K, List<V>>.sumByInt(selector: (V) -> Int): Map<K, Int> =
-        entries.map { it.key to it.value.map(selector).sum() }.toMap()
+        mapValues { it.value.sumOf(selector) }
 
 fun <K, V> Map<K, List<V>>.averageByInt(selector: (V) -> Int): Map<K, Double> =
-        entries.map { it.key to it.value.map(selector).average() }.toMap()
+        mapValues { it.value.map(selector).average() }
 
 fun <K, V> Map<K, List<V>>.intRangeBy(selector: (V) -> Int): Map<K, IntRange> =
-        entries.map { it.key to it.value.map(selector).intRange() }.toMap()
+        mapValues { it.value.map(selector).intRange() }
 
 fun <K, V> Map<K, List<V>>.geometricMeanByInt(selector: (V) -> Int): Map<K, Double> =
-        entries.map { it.key to it.value.map(selector).geometricMean() }.toMap()
+        mapValues { it.value.map(selector).geometricMean() }
 
 fun <K, V> Map<K, List<V>>.medianByInt(selector: (V) -> Int): Map<K, Double> =
-        entries.map { it.key to it.value.map(selector).median() }.toMap()
+        mapValues { it.value.map(selector).median() }
 
 fun <K, V> Map<K, List<V>>.percentileByInt(selector: (V) -> Int, percentile: Double): Map<K, Double> =
-        entries.map { it.key to it.value.map(selector).percentile(percentile) }.toMap()
+        mapValues { it.value.map(selector).percentile(percentile) }
 
 fun <K, V> Map<K, List<V>>.varianceByInt(selector: (V) -> Int): Map<K, Double> =
-        entries.map { it.key to it.value.map(selector).variance() }.toMap()
+        mapValues { it.value.map(selector).variance() }
 
 fun <K, V> Map<K, List<V>>.sumOfSquaresByInt(selector: (V) -> Int): Map<K, Double> =
-        entries.map { it.key to it.value.map(selector).sumOfSquares() }.toMap()
+        mapValues { it.value.map(selector).sumOfSquares() }
 
 fun <K, V> Map<K, List<V>>.normalizeByInt(selector: (V) -> Int): Map<K, DoubleArray> =
-        entries.map { it.key to it.value.map(selector).normalize() }.toMap()
+        mapValues { it.value.map(selector).normalize() }
 
 fun <K, V> Map<K, List<V>>.descriptiveStatisticsByInt(selector: (V) -> Int): Map<K, Descriptives> =
-        entries.map { it.key to it.value.map(selector).descriptiveStatistics }.toMap()
+        mapValues { it.value.map(selector).descriptiveStatistics }

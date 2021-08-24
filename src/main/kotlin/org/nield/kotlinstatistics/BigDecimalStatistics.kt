@@ -4,8 +4,8 @@ import org.nield.kotlinstatistics.range.ClosedOpenRange
 import org.nield.kotlinstatistics.range.until
 import java.math.BigDecimal
 
-fun Sequence<BigDecimal>.sum() = fold(BigDecimal.ZERO) { x,y -> x + y }!!
-fun Iterable<BigDecimal>.sum() = fold(BigDecimal.ZERO) { x,y -> x + y }!!
+fun Sequence<BigDecimal>.sum(): BigDecimal = fold(BigDecimal.ZERO) { x, y -> x + y }
+fun Iterable<BigDecimal>.sum(): BigDecimal = fold(BigDecimal.ZERO) { x, y -> x + y }
 
 fun Sequence<BigDecimal>.average() = toList().let { list ->
     list.sum() / BigDecimal.valueOf(list.count().toDouble())
@@ -84,8 +84,8 @@ inline fun <T, G> List<T>.binByBigDecimal(binSize: BigDecimal,
 ): BinModel<G, BigDecimal> {
 
     val groupedByC = asSequence().groupBy(valueSelector)
-    val minC = rangeStart?:groupedByC.keys.min()!!
-    val maxC = groupedByC.keys.max()!!
+    val minC = rangeStart?:groupedByC.keys.minOrNull()!!
+    val maxC = groupedByC.keys.maxOrNull()!!
 
     val bins = mutableListOf<ClosedOpenRange<BigDecimal>>().apply {
         var currentRangeStart = minC
@@ -114,13 +114,13 @@ fun <T, C : Comparable<C>> BinModel<List<T>, C>.averageByBigDecimal(selector: (T
         bins.map { Bin(it.range, it.value.map(selector).average()) }
 
 fun <T, C : Comparable<C>> BinModel<List<T>, C>.sumByBigDecimal(selector: (T) -> Double) =
-        bins.map { Bin(it.range, it.value.map(selector).sum()) }
+        bins.map { Bin(it.range, it.value.sumOf(selector)) }
 
-fun <K> Map<K, List<BigDecimal>>.sum(): Map<K, BigDecimal> = entries.map { it.key to it.value.sum() }.toMap()
-fun <K> Map<K, List<BigDecimal>>.average(): Map<K, BigDecimal> = entries.map { it.key to it.value.average() }.toMap()
+fun <K> Map<K, List<BigDecimal>>.sum(): Map<K, BigDecimal> = mapValues { it.value.sum() }
+fun <K> Map<K, List<BigDecimal>>.average(): Map<K, BigDecimal> = mapValues { it.value.average() }
 
 fun <K, V> Map<K, List<V>>.sumByBigDecimal(selector: (V) -> BigDecimal): Map<K, BigDecimal> =
-        entries.map { it.key to it.value.map(selector).sum() }.toMap()
+        mapValues { it.value.map(selector).sum() }
 
 fun <K, V> Map<K, List<V>>.averageByBigDecimal(selector: (V) -> BigDecimal): Map<K, BigDecimal> =
-        entries.map { it.key to it.value.map(selector).average() }.toMap()
+        mapValues { it.value.map(selector).average() }

@@ -3,7 +3,6 @@ package org.nield.kotlinstatistics
 import org.nield.kotlinstatistics.range.ClosedOpenRange
 import org.nield.kotlinstatistics.range.Range
 import org.nield.kotlinstatistics.range.XClosedRange
-import org.nield.kotlinstatistics.range.until
 import java.util.concurrent.atomic.AtomicBoolean
 
 class Bin<T,C: Comparable<C>>(val range: Range<C>, val value: T) {
@@ -36,8 +35,8 @@ inline fun <T, C: Comparable<C>, G> List<T>.binByComparable(binIncrements: Int,
                                                             ): BinModel<G, C> {
 
     val groupedByC = asSequence().groupBy(valueSelector)
-    val minC = rangeStart?:groupedByC.keys.min()!!
-    val maxC = groupedByC.keys.max()!!
+    val minC = rangeStart?:groupedByC.keys.minOrNull()!!
+    val maxC = groupedByC.keys.maxOrNull()!!
 
     val bins = mutableListOf<Range<C>>().apply {
         var currentRangeStart = minC

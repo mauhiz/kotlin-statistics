@@ -53,7 +53,7 @@ fun <K> Iterable<Pair<K,Long>>.averageBy() = asSequence().averageBy()
 
 
 fun Sequence<Long>.longRange() = toList().longRange()
-fun Iterable<Long>.longRange() = toList().let { (it.min()?:throw Exception("At least one element must be present"))..(it.max()?:throw Exception("At least one element must be present")) }
+fun Iterable<Long>.longRange() = toList().let { (it.minOrNull()?:throw Exception("At least one element must be present"))..(it.maxOrNull()?:throw Exception("At least one element must be present")) }
 
 inline fun <T,K> Sequence<T>.longRangeBy(crossinline keySelector: (T) -> K, crossinline longSelector: (T) -> Long) =
         groupApply(keySelector, longSelector) { it.range() }
@@ -103,8 +103,8 @@ inline fun <T, G> List<T>.binByLong(binSize: Long,
 ): BinModel<G, Long> {
 
     val groupedByC = asSequence().groupBy(valueSelector)
-    val minC = rangeStart?:groupedByC.keys.min()!!
-    val maxC = groupedByC.keys.max()!!
+    val minC = rangeStart?:groupedByC.keys.minOrNull()!!
+    val maxC = groupedByC.keys.maxOrNull()!!
 
     val bins = mutableListOf<XClosedRange<Long>>().apply {
         var currentRangeStart = minC
@@ -129,7 +129,7 @@ inline fun <T, G> List<T>.binByLong(binSize: Long,
 }
 
 fun <T, C : Comparable<C>> BinModel<List<T>, C>.sumByLong(selector: (T) -> Long): BinModel<Long, C> =
-        BinModel(bins.map { Bin(it.range, it.value.map(selector).sum()) })
+        BinModel(bins.map { Bin(it.range, it.value.sumOf(selector)) })
 
 fun <T, C : Comparable<C>> BinModel<List<T>, C>.averageByLong(selector: (T) -> Long): BinModel<Double, C> =
         BinModel(bins.map { Bin(it.range, it.value.map(selector).average()) })
@@ -159,43 +159,43 @@ fun <T, C : Comparable<C>> BinModel<List<T>, C>.descriptiveStatisticsByLong(sele
         BinModel(bins.map { Bin(it.range, it.value.map(selector).descriptiveStatistics) })
 
 
-fun <K> Map<K, List<Long>>.sum(): Map<K, Long> = entries.map { it.key to it.value.sum() }.toMap()
-fun <K> Map<K, List<Long>>.average(): Map<K, Double> = entries.map { it.key to it.value.average() }.toMap()
-fun <K> Map<K, List<Long>>.longRange(): Map<K, Iterable<Long>> = entries.map { it.key to it.value.longRange() }.toMap()
-fun <K> Map<K, List<Long>>.geometricMean(): Map<K, Double> = entries.map { it.key to it.value.geometricMean() }.toMap()
-fun <K> Map<K, List<Long>>.median(): Map<K, Double> = entries.map { it.key to it.value.median() }.toMap()
-fun <K> Map<K, List<Long>>.percentile(percentile: Double): Map<K, Double> = entries.map { it.key to it.value.percentile(percentile) }.toMap()
-fun <K> Map<K, List<Long>>.variance(): Map<K, Double> = entries.map { it.key to it.value.variance() }.toMap()
-fun <K> Map<K, List<Long>>.sumOfSquares(): Map<K, Double> = entries.map { it.key to it.value.sumOfSquares() }.toMap()
-fun <K> Map<K, List<Long>>.normalize(): Map<K, DoubleArray> = entries.map { it.key to it.value.normalize() }.toMap()
-fun <K> Map<K, List<Long>>.descriptiveStatistics(): Map<K, Descriptives> = entries.map { it.key to it.value.descriptiveStatistics }.toMap()
+fun <K> Map<K, List<Long>>.sum(): Map<K, Long> = mapValues { it.value.sum() }
+fun <K> Map<K, List<Long>>.average(): Map<K, Double> = mapValues { it.value.average() }
+fun <K> Map<K, List<Long>>.longRange(): Map<K, Iterable<Long>> = mapValues { it.value.longRange() }
+fun <K> Map<K, List<Long>>.geometricMean(): Map<K, Double> = mapValues { it.value.geometricMean() }
+fun <K> Map<K, List<Long>>.median(): Map<K, Double> = mapValues { it.value.median() }
+fun <K> Map<K, List<Long>>.percentile(percentile: Double): Map<K, Double> = mapValues { it.value.percentile(percentile) }
+fun <K> Map<K, List<Long>>.variance(): Map<K, Double> = mapValues { it.value.variance() }
+fun <K> Map<K, List<Long>>.sumOfSquares(): Map<K, Double> = mapValues { it.value.sumOfSquares() }
+fun <K> Map<K, List<Long>>.normalize(): Map<K, DoubleArray> = mapValues { it.value.normalize() }
+fun <K> Map<K, List<Long>>.descriptiveStatistics(): Map<K, Descriptives> = mapValues { it.value.descriptiveStatistics }
 
 fun <K, V> Map<K, List<V>>.sumByLong(selector: (V) -> Long): Map<K, Long> =
-        entries.map { it.key to it.value.map(selector).sum() }.toMap()
+        mapValues { it.value.sumOf(selector) }
 
 fun <K, V> Map<K, List<V>>.averageByLong(selector: (V) -> Long): Map<K, Double> =
-        entries.map { it.key to it.value.map(selector).average() }.toMap()
+        mapValues { it.value.map(selector).average() }
 
 fun <K, V> Map<K, List<V>>.longRangeBy(selector: (V) -> Long): Map<K, Iterable<Long>> =
-        entries.map { it.key to it.value.map(selector).longRange() }.toMap()
+        mapValues { it.value.map(selector).longRange() }
 
 fun <K, V> Map<K, List<V>>.geometricMeanByLong(selector: (V) -> Long): Map<K, Double> =
-        entries.map { it.key to it.value.map(selector).geometricMean() }.toMap()
+        mapValues { it.value.map(selector).geometricMean() }
 
 fun <K, V> Map<K, List<V>>.medianByLong(selector: (V) -> Long): Map<K, Double> =
-        entries.map { it.key to it.value.map(selector).median() }.toMap()
+        mapValues { it.value.map(selector).median() }
 
 fun <K, V> Map<K, List<V>>.percentileByLong(selector: (V) -> Long, percentile: Double): Map<K, Double> =
-        entries.map { it.key to it.value.map(selector).percentile(percentile) }.toMap()
+        mapValues { it.value.map(selector).percentile(percentile) }
 
 fun <K, V> Map<K, List<V>>.varianceByLong(selector: (V) -> Long): Map<K, Double> =
-        entries.map { it.key to it.value.map(selector).variance() }.toMap()
+        mapValues { it.value.map(selector).variance() }
 
 fun <K, V> Map<K, List<V>>.sumOfSquaresByLong(selector: (V) -> Long): Map<K, Double> =
-        entries.map { it.key to it.value.map(selector).sumOfSquares() }.toMap()
+        mapValues { it.value.map(selector).sumOfSquares() }
 
 fun <K, V> Map<K, List<V>>.normalizeByLong(selector: (V) -> Long): Map<K, DoubleArray> =
-        entries.map { it.key to it.value.map(selector).normalize() }.toMap()
+        mapValues { it.value.map(selector).normalize() }
 
 fun <K, V> Map<K, List<V>>.descriptiveStatisticsByLong(selector: (V) -> Long): Map<K, Descriptives> =
-        entries.map { it.key to it.value.map(selector).descriptiveStatistics }.toMap()
+        mapValues { it.value.map(selector).descriptiveStatistics }
