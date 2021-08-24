@@ -10,7 +10,7 @@ val FloatArray.descriptiveStatistics get(): Descriptives = DescriptiveStatistics
 
 fun FloatArray.geometricMean() = asSequence().geometricMean()
 fun FloatArray.median() = percentile(50.0)
-fun FloatArray.percentile(percentile: Double) = asSequence().percentile(50.0)
+fun FloatArray.percentile(percentile: Double) = asSequence().percentile(percentile)
 fun FloatArray.variance() = asSequence().variance()
 fun FloatArray.sumOfSquares() = asSequence().sumOfSquares()
 fun FloatArray.standardDeviation() = asSequence().standardDeviation()
